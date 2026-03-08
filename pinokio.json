@@ -1,0 +1,5 @@
+{
+  "title": "LCaptioner",
+  "description": "Caption images using local LLMs via LM Studio's API. Supports drag & drop datasets and batch processing.",
+  "icon": "icon.png"
+}
