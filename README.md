@@ -49,7 +49,7 @@ LCaptioner provides a simple internal API for interacting with the backend:
 - `POST /api/caption-single`: Process a single image.
 
 ## 📝 Notes on LM Studio and local language model
-Tested and working great with a local LM Studio (v0.4.6 with REST API v1) running different versions of Qwen 3.5 9B models. 
+Tested and working great with a local LM Studio (v0.4.6 with REST API v1) running different versions of Qwen 3.5 9B models (e.g. https://huggingface.co/HauhauCS/Qwen3.5-9B-Uncensored-HauhauCS-Aggressive). 
 
 Used the following system prompt:
 
