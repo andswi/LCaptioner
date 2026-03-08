@@ -4,6 +4,7 @@ const fs = require('fs-extra');
 const { OpenAI } = require('openai');
 const { exec } = require('child_process');
 const mime = require('mime-types');
+const sharp = require('sharp');
 
 const app = express();
 // Increase limit for potential base64 uploads if needed, 
@@ -178,9 +179,16 @@ app.post('/api/caption-single', async (req, res) => {
   });
 
   try {
-    const imageBuffer = await fs.readFile(imagePath);
+    const fullImageBuffer = await fs.readFile(imagePath);
     const mimeType = mime.lookup(imagePath) || 'image/jpeg';
-    const imageData = `data:${mimeType};base64,${imageBuffer.toString('base64')}`;
+    const displayImageData = `data:${mimeType};base64,${fullImageBuffer.toString('base64')}`;
+
+    // Normalize image: convert to JPEG and resize to 1024 max dimension for compatibility
+    const llmImageBuffer = await sharp(imagePath)
+      .resize(1024, 1024, { fit: 'inside', withoutEnlargement: true })
+      .jpeg()
+      .toBuffer();
+    const llmImageData = `data:image/jpeg;base64,${llmImageBuffer.toString('base64')}`;
 
     const response = await openai.chat.completions.create({
       model: model || 'model-identifier',
@@ -191,7 +199,7 @@ app.post('/api/caption-single', async (req, res) => {
             { type: 'text', text: prompt || 'Caption this image' },
             {
               type: 'image_url',
-              image_url: { url: imageData },
+              image_url: { url: llmImageData },
             },
           ],
         },
@@ -210,7 +218,7 @@ app.post('/api/caption-single', async (req, res) => {
       status: 'success',
       file: fileName,
       caption,
-      image: imageData
+      image: displayImageData
     });
   } catch (err) {
     console.error('Error in /api/caption-single:', err);
@@ -295,17 +303,23 @@ app.post('/api/caption', async (req, res) => {
       }
 
       try {
-        const imageBuffer = await fs.readFile(imagePath);
-        const base64Image = imageBuffer.toString('base64');
+        const fullImageBuffer = await fs.readFile(imagePath);
         const mimeType = mime.lookup(imagePath) || 'image/jpeg';
-        const imageData = `data:${mimeType};base64,${base64Image}`;
+        const displayImageData = `data:${mimeType};base64,${fullImageBuffer.toString('base64')}`;
+
+        // Normalize image for LLM: convert to JPEG and resize to 1024 max dimension
+        const llmImageBuffer = await sharp(imagePath)
+          .resize(1024, 1024, { fit: 'inside', withoutEnlargement: true })
+          .jpeg()
+          .toBuffer();
+        const llmImageData = `data:image/jpeg;base64,${llmImageBuffer.toString('base64')}`;
 
         res.write(`data: ${JSON.stringify({ 
           status: 'started', 
           current, 
           total, 
           file: imageFile, 
-          image: imageData
+          image: displayImageData
         })}\n\n`);
 
         const response = await openai.chat.completions.create({
@@ -317,7 +331,7 @@ app.post('/api/caption', async (req, res) => {
                 { type: 'text', text: prompt || 'Caption this image' },
                 {
                   type: 'image_url',
-                  image_url: { url: imageData },
+                  image_url: { url: llmImageData },
                 },
               ],
             },
@@ -339,7 +353,7 @@ app.post('/api/caption', async (req, res) => {
           total, 
           file: imageFile, 
           caption,
-          image: imageData
+          image: displayImageData
         })}\n\n`);
 
       } catch (err) {
