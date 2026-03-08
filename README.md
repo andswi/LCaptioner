@@ -2,6 +2,11 @@
 
 LCaptioner is a powerful, local batch image captioning tool designed for the Pinokio ecosystem. It leverages local Large Language Models (LLMs) via OpenAI-compatible APIs (like LM Studio) to generate high-quality descriptions for image datasets, making it an essential tool for preparing training data for Stable Diffusion, Flux, or other vision-based models.
 
+<div align="center">
+  <img src="icons/screen1.png" style="width:45%; min-width:250px; margin:5px;">
+  <img src="icons/screen2.png" style="width:45%; min-width:250px; margin:5px;">
+</div>
+
 ## 🚀 Features
 
 - **Local LLM Integration**: Seamlessly connect to LM Studio, Ollama, or any OpenAI-compatible local API.
